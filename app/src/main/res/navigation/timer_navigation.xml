@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/timer_navigation"
+    app:startDestination="@id/homeTimer">
+
+    <fragment
+        android:id="@+id/homeTimer"
+        android:name="com.example.interval_timer.UI.HomeTimer"
+        android:label="fragment_home_timer"
+        tools:layout="@layout/fragment_home_timer" >
+        <action
+            android:id="@+id/action_homeTimer_to_configTimer"
+            app:destination="@id/configTimer" />
+        <action
+            android:id="@+id/action_homeTimer_to_finishedWorkout"
+            app:destination="@id/finishedWorkout" />
+        <action
+            android:id="@+id/action_homeTimer_to_registerWorkout"
+            app:destination="@id/registerWorkout" />
+        <argument
+            android:name="worktime"
+            app:argType="integer"
+            android:defaultValue="0" />
+        <argument
+            android:name="restTime"
+            app:argType="integer"
+            android:defaultValue="0" />
+        <argument
+            android:name="round"
+            app:argType="integer"
+            android:defaultValue="0" />
+    </fragment>
+    <fragment
+        android:id="@+id/registerWorkout"
+        android:name="com.example.interval_timer.UI.RegisterWorkout"
+        android:label="fragment_register_workout"
+        tools:layout="@layout/fragment_register_workout" />
+    <fragment
+        android:id="@+id/configTimer"
+        android:name="com.example.interval_timer.UI.ConfigTimer"
+        android:label="fragment_config_timer"
+        tools:layout="@layout/fragment_config_timer" >
+        <action
+            android:id="@+id/action_configTimer_to_homeTimer"
+            app:destination="@id/homeTimer" />
+    </fragment>
+    <fragment
+        android:id="@+id/finishedWorkout"
+        android:name="com.example.interval_timer.UI.FinishedWorkout"
+        android:label="fragment_finished_workout"
+        tools:layout="@layout/fragment_finished_workout" >
+        <action
+            android:id="@+id/action_finishedWorkout_to_homeTimer"
+            app:destination="@id/homeTimer" />
+    </fragment>
+</navigation>

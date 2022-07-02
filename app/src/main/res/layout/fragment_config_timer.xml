@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/greyBcg1"
+    android:visibility="visible"
+    tools:context=".UI.ConfigTimer">
+
+    <TextView
+        android:id="@+id/textView_Title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:fontFamily="@font/roboto_light"
+        android:text="WORK"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/time_picker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@+id/rest_selection"
+        app:layout_constraintEnd_toEndOf="@+id/textView_Title"
+        app:layout_constraintStart_toStartOf="@+id/textView_Title"
+        app:layout_constraintTop_toBottomOf="@+id/textView_Title">
+
+        <NumberPicker
+            android:id="@+id/minutes_picker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:layout_editor_absoluteX="91dp"
+            tools:layout_editor_absoluteY="242dp" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:text="min"
+            app:layout_constraintBottom_toBottomOf="@+id/minutes_picker"
+            app:layout_constraintStart_toEndOf="@+id/minutes_picker"
+            app:layout_constraintTop_toTopOf="@+id/minutes_picker" />
+
+        <NumberPicker
+            android:id="@+id/seconde_picker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            tools:layout_editor_absoluteX="235dp"
+            tools:layout_editor_absoluteY="242dp" />
+
+
+        <TextView
+            android:id="@+id/textView4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:text="sec"
+            app:layout_constraintBottom_toBottomOf="@+id/seconde_picker"
+            app:layout_constraintStart_toEndOf="@+id/seconde_picker"
+            app:layout_constraintTop_toTopOf="@+id/seconde_picker" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/round_data_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:visibility="gone"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/rest_selection"
+        app:layout_constraintEnd_toEndOf="@+id/textView_Title"
+        app:layout_constraintStart_toStartOf="@+id/textView_Title"
+        app:layout_constraintTop_toBottomOf="@+id/textView_Title">
+
+        <NumberPicker
+            android:id="@+id/round_data_picker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:layout_editor_absoluteX="91dp"
+            tools:layout_editor_absoluteY="242dp" />
+
+        <TextView
+            android:id="@+id/round_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:text="sec"
+            app:layout_constraintBottom_toBottomOf="@+id/seconde_picker"
+            app:layout_constraintStart_toEndOf="@+id/seconde_picker"
+            app:layout_constraintTop_toTopOf="@+id/seconde_picker" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/rest_selection"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:background="@drawable/grey_round_rectangle"
+        android:elevation="15dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/ok_button_config"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.87">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:src="@drawable/rest_icon" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:padding="5dp">
+
+            <TextView
+                android:id="@+id/rest_data_minute"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="00" />
+
+            <TextView
+                android:id="@+id/text_min"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="min" />
+
+            <TextView
+                android:id="@+id/rest_data_sec"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:text="00" />
+
+            <TextView
+                android:id="@+id/text_sec"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="sec" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/round_selections"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:background="@drawable/grey_round_rectangle"
+        android:elevation="15dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="@+id/rest_selection"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/rest_selection"
+        app:layout_constraintTop_toTopOf="@+id/rest_selection">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:src="@drawable/round_icon" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:padding="5dp">
+
+            <TextView
+                android:id="@+id/round_data"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="00" />
+
+            <TextView
+                android:id="@+id/text_round"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="X" />
+
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/workout_selection"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:background="@drawable/grey_round_rectangle"
+        android:elevation="15dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="@+id/rest_selection"
+        app:layout_constraintEnd_toStartOf="@+id/rest_selection"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/rest_selection">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:src="@drawable/working_icon" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:padding="5dp">
+
+            <TextView
+                android:id="@+id/work_data_minutes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="00" />
+
+            <TextView
+                android:id="@+id/work_text_min"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="min" />
+
+            <TextView
+                android:id="@+id/work_data_sec"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:text="00" />
+
+            <TextView
+                android:id="@+id/work_text_sec"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="sec" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/ok_button_config"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:backgroundTint="@color/greyBcg1"
+        android:elevation="20dp"
+        android:text="Ok"
+        android:textColor="@color/greyBase1"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>
