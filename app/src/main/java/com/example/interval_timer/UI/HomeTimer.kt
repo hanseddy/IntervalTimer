@@ -3,6 +3,7 @@ package com.example.interval_timer.UI
 import android.graphics.Typeface
 import android.icu.text.DecimalFormat
 import android.icu.text.NumberFormat
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.Log
@@ -48,6 +49,8 @@ class HomeTimer : Fragment() {
     var m_restTime =0
     var m_round =0
 
+    var m_round_finished=0
+
     var state:Etat=Etat.WORK
 
     lateinit var min_layout:TextView
@@ -67,6 +70,8 @@ class HomeTimer : Fragment() {
     lateinit var TwoDigitFormat: NumberFormat
 
     var beforePaused:Boolean=false
+    lateinit var workMediaPlayer:MediaPlayer
+    lateinit var restMediaPlayer:MediaPlayer
     /**
      * end of declaration
      */
@@ -80,6 +85,9 @@ class HomeTimer : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        //mediaplayer
+        workMediaPlayer = MediaPlayer.create(context, R.raw.clock_tick)
+        restMediaPlayer = MediaPlayer.create(context, R.raw.clock_tick2)
         //formatage 2 digit
         TwoDigitFormat = DecimalFormat("00")
         // Database instanciation
@@ -100,6 +108,7 @@ class HomeTimer : Fragment() {
             m_woTime= args.worktime
             m_restTime= args.restTime
             m_round= args.round
+            m_round_finished= args.round
         Log.i("time","woTime"+m_woTime+" rest"+m_restTime+ "m_round" +m_round)
         /***
          * set connfig data in viewmodel
@@ -114,7 +123,7 @@ class HomeTimer : Fragment() {
          */
         //populateLastWorkout(view,model)
         model.configworkTime.observe(viewLifecycleOwner, Observer {
-            view.findViewById<TextView>(R.id.LastWO_min_home).text=TwoDigitFormat?.format(retrieveMin(it)).toString()//retrieveMin(it).toString()
+            view.findViewById<TextView>(R.id.LastWO_min_home).text=TwoDigitFormat?.format(retrieveMin(it)).toString()
             view.findViewById<TextView>(R.id.LastWO_sec_home).text=TwoDigitFormat?.format(retrieveSeconde(it)).toString()
         })
 
@@ -125,6 +134,7 @@ class HomeTimer : Fragment() {
         model.configroundTime.observe(viewLifecycleOwner, Observer {
             view.findViewById<TextView>(R.id.LastWO_round_home).text=it.toString()
         })
+
         /****
          * button management
          */
@@ -143,7 +153,6 @@ class HomeTimer : Fragment() {
         view.findViewById<ImageButton>(R.id.save_button_home).setOnClickListener {
             navController.navigate(R.id.registerWorkout)
         }
-
         /**
          * populate main UI
          */
@@ -272,8 +281,8 @@ class HomeTimer : Fragment() {
                 //format
                 min_layout.text= TwoDigitFormat?.format(min).toString()
                 sec_layout.text= TwoDigitFormat?.format(sec).toString()
-                //TODO: set data in viewmodel (ui is refreshed by viewmodel)
-
+                // audio sound
+                workMediaPlayer.start()
             }
             override fun onFinish() {
                 //start rest countdown
@@ -294,8 +303,8 @@ class HomeTimer : Fragment() {
                 //format
                 min_layout.text= TwoDigitFormat?.format(min).toString()
                 sec_layout.text= TwoDigitFormat?.format(sec).toString()
-                //TODO: set data in viewmodel (ui is refreshed by viewmodel)
-
+                // audio sound
+                restMediaPlayer.start()
             }
             override fun onFinish() {
                 // decrement round
@@ -307,7 +316,9 @@ class HomeTimer : Fragment() {
                     StartWorkout(navController,woTime,restTime,round,view)
                 }else{
                     // when round =0 => navigate to finished
-                    navController.navigate(R.id.finishedWorkout)
+                    val action= HomeTimerDirections.actionHomeTimerToFinishedWorkout().setWorkTime(m_woTime).setRestTime(m_restTime).setRound(m_round_finished)
+                    view.findNavController().navigate(action)
+                //navController.navigate(R.id.finishedWorkout)
                 }
 
             }
@@ -407,7 +418,8 @@ class HomeTimer : Fragment() {
                 //format
                 min_layout.text= TwoDigitFormat?.format(min).toString()
                 sec_layout.text= TwoDigitFormat?.format(sec).toString()
-                //TODO: set data in viewmodel (ui is refreshed by viewmodel)
+                // audio sound
+                restMediaPlayer.start()
             }
             override fun onFinish() {
                 m_round=m_round.minus(1)
@@ -428,6 +440,8 @@ class HomeTimer : Fragment() {
         // faire le décompte
         m_startTimer =object : CountDownTimer((leftwoTime*1000).toLong(), 1000) {
             override fun onTick(millisUntilFinished: Long) {
+                // audio sound
+                workMediaPlayer.start()
                 setUI_W_R_state(state, view)
                 round_layout.text=m_round.toString() //set round UI
                 var min =retrieveMin((millisUntilFinished/1000).toInt())
@@ -435,6 +449,7 @@ class HomeTimer : Fragment() {
                 //format
                 min_layout.text= TwoDigitFormat?.format(min).toString()
                 sec_layout.text= TwoDigitFormat?.format(sec).toString()
+
             }
             override fun onFinish() {
                 // set state to REST*/
