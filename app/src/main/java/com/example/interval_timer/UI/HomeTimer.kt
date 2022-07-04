@@ -20,11 +20,20 @@ import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.interval_timer.R
+import com.example.interval_timer.database.Timer
 import com.example.interval_timer.database.TimerDatabase
 import com.example.interval_timer.repository.TimerRepository
 import com.example.interval_timer.viewmodel.TimerViewmodel
 
 class HomeTimer : Fragment() {
+
+    /**
+     * declaration
+     */
+    // countdown timer
+    lateinit var m_startTimer: CountDownTimer
+    lateinit var m_restTimer: CountDownTimer
+    lateinit var m_pausedAfterworkTimer: CountDownTimer
 
     //mode
     enum class Mode{
@@ -34,10 +43,10 @@ class HomeTimer : Fragment() {
     enum class Etat{
         WORK,REST
     }
-    val mode:Mode= Mode.PLAY
-    var m_woTime=0 //by Delegates.notNull<Int>()
-    var m_restTime =0 //by Delegates.notNull<Int>()
-    var m_round =0 //by Delegates.notNull<Int>()
+    var mode:Mode= Mode.PLAY
+    var m_woTime=0
+    var m_restTime =0
+    var m_round =0
 
     var state:Etat=Etat.WORK
 
@@ -57,6 +66,10 @@ class HomeTimer : Fragment() {
     //two digit format
     lateinit var TwoDigitFormat: NumberFormat
 
+    var beforePaused:Boolean=false
+    /**
+     * end of declaration
+     */
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -67,6 +80,8 @@ class HomeTimer : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        //formatage 2 digit
+        TwoDigitFormat = DecimalFormat("00")
         // Database instanciation
         database= TimerDatabase.getDatabase(requireContext())
         // Repository
@@ -86,7 +101,30 @@ class HomeTimer : Fragment() {
             m_restTime= args.restTime
             m_round= args.round
         Log.i("time","woTime"+m_woTime+" rest"+m_restTime+ "m_round" +m_round)
+        /***
+         * set connfig data in viewmodel
+         */
 
+        model.setconfigworkTime(m_woTime)
+        model.setconfigrestTime(m_restTime)
+        model.setconfigroundTime(m_round)
+
+        /***
+         * populate last workout
+         */
+        //populateLastWorkout(view,model)
+        model.configworkTime.observe(viewLifecycleOwner, Observer {
+            view.findViewById<TextView>(R.id.LastWO_min_home).text=TwoDigitFormat?.format(retrieveMin(it)).toString()//retrieveMin(it).toString()
+            view.findViewById<TextView>(R.id.LastWO_sec_home).text=TwoDigitFormat?.format(retrieveSeconde(it)).toString()
+        })
+
+        model.configrestTime.observe(viewLifecycleOwner, Observer {
+            view.findViewById<TextView>(R.id.LastRest_min_home).text=TwoDigitFormat?.format(retrieveMin(it)).toString()
+            view.findViewById<TextView>(R.id.LastRest_sec_home).text=TwoDigitFormat?.format(retrieveSeconde(it)).toString()
+        })
+        model.configroundTime.observe(viewLifecycleOwner, Observer {
+            view.findViewById<TextView>(R.id.LastWO_round_home).text=it.toString()
+        })
         /****
          * button management
          */
@@ -94,10 +132,13 @@ class HomeTimer : Fragment() {
         new_wo_button.setOnClickListener {
             navController.navigate(R.id.configTimer)
         }
+
         //play button
         view.findViewById<ImageButton>(R.id.play_pause_button).setOnClickListener {
-            StartWorkout(navController,model,m_woTime,m_restTime,m_round,view)
+            PlayPauseManagButton(view)
         }
+
+
         //Nav to register workout
         view.findViewById<ImageButton>(R.id.save_button_home).setOnClickListener {
             navController.navigate(R.id.registerWorkout)
@@ -107,46 +148,125 @@ class HomeTimer : Fragment() {
          * populate main UI
          */
         // initialisation de format
-        TwoDigitFormat = DecimalFormat("00")
         min_layout.text= TwoDigitFormat?.format(retrieveMin(m_woTime)).toString()//retrieveMin(m_woTime).toString()  //String.format("%02d", (retrieveMin(m_woTime).toString()))//
         sec_layout.text= TwoDigitFormat?.format(retrieveSeconde(m_woTime)).toString()
         round_layout.text=m_round.toString()
 
-        /***
-         * populate last workout
-         */
-        populateLastWorkout(view,m_woTime,m_restTime,m_round)
-        /***
-         * set ui countdown
-         */
-        // observe les livedata
-        model.workRealTime.observe(viewLifecycleOwner, Observer {
-            min_layout.text=retrieveMin(it).toString()
-            sec_layout.text=retrieveSeconde(it).toString()
+
+
+    }
+
+    private fun PlayPauseManagButton(view: View) {
+        var l_round: Int = 0
+        var l_min: Int = 0
+        var l_sec: Int = 0
+
+        if (mode == Mode.PLAY) {
+
+            mode = Mode.PAUSE
+            playButtonManagingIcon(view)
+
+            if (beforePaused == false) {
+                //start interval timer
+                StartWorkout(navController, (m_woTime.plus(1)), (m_restTime.plus(1)), m_round, view)
+
+            } else if (beforePaused == true) {
+                if (state == Etat.WORK) {
+                    // appel les fonctions pour d'abord countdown du left work puis rest
+                    val woTimeleft: Int = model.getworkTimeLeft()!!
+                    CountdownWorkAfterPaused(
+                        navController,
+                        (m_woTime.plus(1)),
+                        (woTimeleft.plus(1)),
+                        (m_restTime.plus(1)),
+                        view
+                    )
+                } else if (state == Etat.REST) {
+                    // appel rest puis on revient au normal
+                    val restTimeleft: Int = model.getrestTimeLeft()
+
+                    CountdownRestAfterPaused(
+                        navController,
+                        (m_woTime.plus(1)),
+                        (restTimeleft.plus(1)),
+                        view
+                    )
+                }
+            }
+        } else if (mode == Mode.PAUSE) {
+
+            mode = Mode.PLAY
+            playButtonManagingIcon(view)
+
+            if (state == Etat.WORK) {
+                stoppedClockManagWork(l_round, l_min, l_sec)
+            } else if (state == Etat.REST) {
+                stopedClockManagRest(l_min, l_sec, l_round)
+            }
+            beforePaused = true
+        }
+    }
+
+    private fun stoppedClockManagWork(l_round: Int, l_min: Int, l_sec: Int) {
+        // arreter le countdown
+        var l_round1 = l_round
+        var l_min1 = l_min
+        var l_sec1 = l_sec
+        m_startTimer.cancel()
+        // rafraichir data: numRoundLeft, workTimeLeft if we are in work state
+        l_round1 = Integer.parseInt(round_layout.text.toString())
+        l_min1 = Integer.parseInt(min_layout.text.toString())
+        l_sec1 = Integer.parseInt(sec_layout.text.toString())
+        val l_worktimeleft: Int = l_min1.times(60).plus(l_sec1)
+
+        model.setnumRoundLeft(l_round1) // changer le round
+        model.setworkTimeLeft(l_worktimeleft)
+        // freeze UI
+        model.workTimeLeft.observe(viewLifecycleOwner, Observer {
+            min_layout.text = TwoDigitFormat.format(retrieveMin(it)).toString()
+            sec_layout.text = TwoDigitFormat.format(retrieveSeconde(it)).toString()
         })
-        model.restRealTime.observe(viewLifecycleOwner, Observer {
-            min_layout.text=retrieveMin(it).toString()
-            sec_layout.text=retrieveSeconde(it).toString()
+        model.numRoundLeft.observe(viewLifecycleOwner, Observer {
+            round_layout.text = it.toString()
         })
-        model.roundRealTime.observe(viewLifecycleOwner, Observer {
-            round_layout.text=it.toString()
+    }
+
+    private fun stopedClockManagRest(l_min: Int, l_sec: Int, l_round: Int) {
+        // arreter le countdown
+        var l_min1 = l_min
+        var l_sec1 = l_sec
+        var l_round1 = l_round
+        m_restTimer.cancel()
+       // m_pausedAfterworkTimer.cancel()  //arreter si hold in rest workafterpaused
+        // freeze UI
+        l_round1 = Integer.parseInt(round_layout.text.toString())
+        l_min1 = Integer.parseInt(min_layout.text.toString())
+        l_sec1 = Integer.parseInt(sec_layout.text.toString())
+
+        val l_restTimeleft: Int = l_min1.times(60).plus(l_sec1)
+
+        model.setnumRoundLeft(l_round1) // changer le round
+        model.setrestTimeLeft(l_restTimeleft)
+
+        // rafraichir data: numRoundLeft, restTimeLeft if we are in rest state
+        model.restTimeLeft.observe(viewLifecycleOwner, Observer {
+            min_layout.text = TwoDigitFormat.format(retrieveMin(it)).toString()
+            sec_layout.text = TwoDigitFormat.format(retrieveSeconde(it)).toString()
         })
-        /**
-         * format text
-         */
-        //String.format("02%d",)
+        model.numRoundLeft.observe(viewLifecycleOwner, Observer {
+            round_layout.text = it.toString()
+        })
     }
 
     /**
      *  function : countdown   status => not finished yet
      */
-    fun StartWorkout(navController: NavController,model: ViewModel,woTime:Int, restTime:Int, round:Int,view: View){
+    fun StartWorkout(navController: NavController,woTime:Int, restTime:Int, round:Int,view: View){
         // faire le décompte
-        object : CountDownTimer((woTime*1000).plus(1).toLong(), 1000) {
+        m_startTimer =object : CountDownTimer((woTime*1000).toLong(), 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 setUI_W_R_state(state, view)
-                round_layout.text=m_round.toString()
-                //mTextField.setText("seconds remaining: " + millisUntilFinished / 1000)
+                round_layout.text=m_round.toString() //set round UI
                 var min =retrieveMin((millisUntilFinished/1000).toInt())
                 var sec =retrieveSeconde((millisUntilFinished/1000).toInt())
                 //format
@@ -156,17 +276,16 @@ class HomeTimer : Fragment() {
 
             }
             override fun onFinish() {
-                Toast.makeText(context,"work "+m_round.toString(),Toast.LENGTH_SHORT).show()
                 //start rest countdown
-                countdownrest(navController,model,woTime,restTime,m_round,view)
+                countdownrest(navController,woTime,restTime,m_round,view)
                 // set state to REST
                 state=Etat.REST
             }
         }.start()
     }
 
-    fun countdownrest(navController: NavController,model: ViewModel,woTime:Int,restTime: Int,round: Int,view: View){
-        object : CountDownTimer((restTime*1000).plus(1).toLong(), 1000) {
+    fun countdownrest(navController: NavController,woTime:Int,restTime: Int,round: Int,view: View){
+        m_restTimer = object : CountDownTimer((restTime*1000).toLong(), 1000) {
 
             override fun onTick(millisUntilFinished: Long) {
                 setUI_W_R_state(state, view)
@@ -184,8 +303,8 @@ class HomeTimer : Fragment() {
                 state=Etat.WORK
                 //TODO: start work countdown
                 if(m_round>0){
-                    Toast.makeText(context,"rest "+m_round.toString(),Toast.LENGTH_SHORT).show()
-                    StartWorkout(navController,model,woTime,restTime,round,view)
+                    beforePaused=false
+                    StartWorkout(navController,woTime,restTime,round,view)
                 }else{
                     // when round =0 => navigate to finished
                     navController.navigate(R.id.finishedWorkout)
@@ -194,6 +313,7 @@ class HomeTimer : Fragment() {
             }
         }.start()
     }
+
 
     /****
      * Play,Pause data managing
@@ -208,15 +328,27 @@ class HomeTimer : Fragment() {
     /***
      * populate the data from the config data
      */
-    fun populateLastWorkout(view: View,work:Int,rest:Int,round: Int){
-        //work
+    fun populateLastWorkout(view: View,model:TimerViewmodel){
+        model.configworkTime.observe(viewLifecycleOwner, Observer {
+            view.findViewById<TextView>(R.id.LastWO_min_home).text=retrieveMin(it).toString()
+            view.findViewById<TextView>(R.id.LastWO_sec_home).text=retrieveMin(it).toString()
+        })
+
+        model.configrestTime.observe(viewLifecycleOwner, Observer {
+            view.findViewById<TextView>(R.id.LastRest_min_home).text=retrieveMin(it).toString()
+            view.findViewById<TextView>(R.id.LastRest_sec_home).text=retrieveMin(it).toString()
+        })
+        model.configroundTime.observe(viewLifecycleOwner, Observer {
+            view.findViewById<TextView>(R.id.LastWO_round_home).text=it.toString()
+        })
+/*        //work
         view.findViewById<TextView>(R.id.LastWO_min_home).text=retrieveMin(work).toString()
         view.findViewById<TextView>(R.id.LastWO_sec_home).text=retrieveMin(work).toString()
         //rest
         view.findViewById<TextView>(R.id.LastRest_min_home).text=retrieveMin(rest).toString()
         view.findViewById<TextView>(R.id.LastRest_sec_home).text=retrieveMin(rest).toString()
         //round
-        view.findViewById<TextView>(R.id.LastWO_round_home).text=round.toString()
+        view.findViewById<TextView>(R.id.LastWO_round_home).text=round.toString()*/
     }
 
     /***
@@ -246,21 +378,69 @@ class HomeTimer : Fragment() {
         if (state==Etat.WORK){
             view.findViewById<TextView>(R.id.work_status_home).typeface= Typeface.DEFAULT_BOLD // set to bold
             view.findViewById<TextView>(R.id.work_status_home).setTextColor(resources.getColor(R.color.green)) //set color
-            //view.findViewById<TextView>(R.id.work_status_home).textSize=resources.getDimension(R.dimen.DominantstateSize)
 
             view.findViewById<TextView>(R.id.rest_status).typeface= Typeface.DEFAULT // set to normal
             view.findViewById<TextView>(R.id.rest_status).setTextColor(resources.getColor(R.color.black)) //set back the color
-            //view.findViewById<TextView>(R.id.rest_status).textSize=resources.getDimension(R.dimen.RecessifstateSize) //set back the color
+
         }else if (state==Etat.REST){
             view.findViewById<TextView>(R.id.rest_status).typeface= Typeface.DEFAULT_BOLD // set to bold
             view.findViewById<TextView>(R.id.rest_status).setTextColor(resources.getColor(R.color.green)) //set color
-            //view.findViewById<TextView>(R.id.rest_status).textSize=resources.getDimension(R.dimen.DominantstateSize) //set back the color
 
             view.findViewById<TextView>(R.id.work_status_home).typeface= Typeface.DEFAULT // set to bold
             view.findViewById<TextView>(R.id.work_status_home).setTextColor(resources.getColor(R.color.black)) //set color
-            //view.findViewById<TextView>(R.id.work_status_home).textSize=resources.getDimension(R.dimen.RecessifstateSize)
         }
     }
 
+    /**
+     *  Countdown if paused at second cycle: rest
+     *  le paramettre : restTime ici est le rest qui n'a pas été decompté du à la mise en pause
+     *  le paramettre : StarWorkout() m_round_paused doit être rafraichis  TODO
+     */
+    fun CountdownRestAfterPaused(navController: NavController,workTime:Int,restTime:Int,view: View){
+        // faire le décompte
+        object : CountDownTimer((restTime*1000).toLong(), 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                setUI_W_R_state(state, view)
+                round_layout.text=m_round.toString() //set round UI
+                var min =retrieveMin((millisUntilFinished/1000).toInt())
+                var sec =retrieveSeconde((millisUntilFinished/1000).toInt())
+                //format
+                min_layout.text= TwoDigitFormat?.format(min).toString()
+                sec_layout.text= TwoDigitFormat?.format(sec).toString()
+                //TODO: set data in viewmodel (ui is refreshed by viewmodel)
+            }
+            override fun onFinish() {
+                m_round=m_round.minus(1)
+                // les parametre workTime reste le même
+                StartWorkout(navController,workTime,m_restTime,m_round,view)
+                // set state to REST
+                state=Etat.WORK
+            }
+        }.start()
+    }
+    /**
+     *  Countdown if paused at second cycle: work
+     *  le paramettre : restTime ici est le rest qui n'a pas été decompté du à la mise en pause
+     *  le paramettre : StarWorkout() m_round_paused doit être rafraichis
+     */
 
+    fun CountdownWorkAfterPaused(navController: NavController,woTime:Int,leftwoTime:Int, restTime:Int,view: View){
+        // faire le décompte
+        m_startTimer =object : CountDownTimer((leftwoTime*1000).toLong(), 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                setUI_W_R_state(state, view)
+                round_layout.text=m_round.toString() //set round UI
+                var min =retrieveMin((millisUntilFinished/1000).toInt())
+                var sec =retrieveSeconde((millisUntilFinished/1000).toInt())
+                //format
+                min_layout.text= TwoDigitFormat?.format(min).toString()
+                sec_layout.text= TwoDigitFormat?.format(sec).toString()
+            }
+            override fun onFinish() {
+                // set state to REST*/
+                state=Etat.REST
+                countdownrest(navController,woTime,restTime,m_round,view)
+            }
+        }.start()
+    }
 }
