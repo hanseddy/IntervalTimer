@@ -12,7 +12,7 @@
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.125" />
         <entry key="app/src/main/res/layout/fragment_config_timer.xml" value="0.25" />
         <entry key="app/src/main/res/layout/fragment_finished_workout.xml" value="0.25" />
-        <entry key="app/src/main/res/layout/fragment_home_timer.xml" value="0.375" />
+        <entry key="app/src/main/res/layout/fragment_home_timer.xml" value="0.165" />
         <entry key="app/src/main/res/layout/fragment_register_workout.xml" value="0.27291666666666664" />
         <entry key="app/src/main/res/layout/popup_editname.xml" value="0.322463768115942" />
         <entry key="app/src/main/res/layout/timer_recycler_view_template.xml" value="0.32518115942028986" />

@@ -3,6 +3,7 @@ package com.example.interval_timer.UI
 import android.app.AlertDialog
 import android.icu.text.DecimalFormat
 import android.icu.text.NumberFormat
+import android.media.MediaPlayer
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -10,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.interval_timer.R
 import com.example.interval_timer.database.Timer
@@ -28,7 +30,9 @@ class FinishedWorkout : Fragment() {
     //navigation component
     //two digit format
     lateinit var TwoDigitFormat: NumberFormat
-    //lateinit var button: Button
+    //mediaplayer
+    lateinit var MediaPlayer: MediaPlayer
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -47,6 +51,11 @@ class FinishedWorkout : Fragment() {
         //viewmodel instantiation
         model= ViewModelProvider(this,
             TimerViewmodel.WordViewmodelFactory(repository))[TimerViewmodel::class.java]
+        /**
+         * mediaplayer
+         */
+        MediaPlayer = android.media.MediaPlayer.create(context, R.raw.complete_finish)
+        MediaPlayer.start()
 
        val button=view.findViewById<ImageButton>(R.id.register_wo_finishedWO)
         TwoDigitFormat = DecimalFormat("00")
@@ -58,10 +67,12 @@ class FinishedWorkout : Fragment() {
 
               populateUI(dialogLayout)
 
-
-
-
-
+              /**
+               * back button management
+               */
+              view.findViewById<ImageButton>(R.id.Back_button_).setOnClickListener {
+                  view.findNavController().navigate(R.id.homeTimer)
+              }
              builder.setPositiveButton(android.R.string.yes) { dialog, which ->
                  /*Toast.makeText(context,
                      android.R.string.yes, Toast.LENGTH_SHORT).show()*/

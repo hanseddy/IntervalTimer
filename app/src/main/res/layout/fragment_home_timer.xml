@@ -381,4 +381,17 @@
             app:layout_constraintTop_toTopOf="@+id/work_status_home" />
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/textView5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/alarm_clock"
+        android:text="TIIMER"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toTopOf="@+id/relativelayout"
+        app:layout_constraintEnd_toEndOf="@+id/relativelayout"
+        app:layout_constraintStart_toStartOf="@+id/relativelayout"
+        app:layout_constraintTop_toTopOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

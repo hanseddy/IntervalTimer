@@ -36,7 +36,11 @@
         android:id="@+id/registerWorkout"
         android:name="com.example.interval_timer.UI.RegisterWorkout"
         android:label="fragment_register_workout"
-        tools:layout="@layout/fragment_register_workout" />
+        tools:layout="@layout/fragment_register_workout" >
+        <action
+            android:id="@+id/action_registerWorkout_to_homeTimer"
+            app:destination="@id/homeTimer" />
+    </fragment>
     <fragment
         android:id="@+id/configTimer"
         android:name="com.example.interval_timer.UI.ConfigTimer"

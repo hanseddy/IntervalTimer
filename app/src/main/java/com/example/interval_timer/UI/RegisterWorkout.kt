@@ -8,9 +8,11 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.interval_timer.R
@@ -41,6 +43,12 @@ class RegisterWorkout : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        /**
+         * back button management
+         */
+        view.findViewById<ImageButton>(R.id.Back_button).setOnClickListener {
+            view.findNavController().navigate(R.id.homeTimer)
+        }
         // Database instanciation
         database= TimerDatabase.getDatabase(requireContext())
         // Repository

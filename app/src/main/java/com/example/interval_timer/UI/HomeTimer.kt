@@ -352,14 +352,7 @@ class HomeTimer : Fragment() {
         model.configroundTime.observe(viewLifecycleOwner, Observer {
             view.findViewById<TextView>(R.id.LastWO_round_home).text=it.toString()
         })
-/*        //work
-        view.findViewById<TextView>(R.id.LastWO_min_home).text=retrieveMin(work).toString()
-        view.findViewById<TextView>(R.id.LastWO_sec_home).text=retrieveMin(work).toString()
-        //rest
-        view.findViewById<TextView>(R.id.LastRest_min_home).text=retrieveMin(rest).toString()
-        view.findViewById<TextView>(R.id.LastRest_sec_home).text=retrieveMin(rest).toString()
-        //round
-        view.findViewById<TextView>(R.id.LastWO_round_home).text=round.toString()*/
+
     }
 
     /***
