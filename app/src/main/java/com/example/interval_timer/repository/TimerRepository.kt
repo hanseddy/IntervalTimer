@@ -8,6 +8,10 @@ class TimerRepository(private val timerDao: TimerDao) {
 
     val getAllWord: Flow<List<Timer>> = timerDao.getAllTimer()
 
+    suspend fun getTimerAt(id:Int):Timer{
+        return timerDao.getTimerAt(id)
+    }
+
     suspend fun insertTimer(timer: Timer) {
         timerDao.insertTimer(timer)
     }

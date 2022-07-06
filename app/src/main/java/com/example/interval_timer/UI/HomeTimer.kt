@@ -12,16 +12,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.interval_timer.R
-import com.example.interval_timer.database.Timer
 import com.example.interval_timer.database.TimerDatabase
 import com.example.interval_timer.repository.TimerRepository
 import com.example.interval_timer.viewmodel.TimerViewmodel
@@ -34,7 +31,7 @@ class HomeTimer : Fragment() {
     // countdown timer
     lateinit var m_startTimer: CountDownTimer
     lateinit var m_restTimer: CountDownTimer
-    lateinit var m_pausedAfterworkTimer: CountDownTimer
+    lateinit var m_pausedAfterrestTimer: CountDownTimer
 
     //mode
     enum class Mode{
@@ -153,16 +150,48 @@ class HomeTimer : Fragment() {
         view.findViewById<ImageButton>(R.id.save_button_home).setOnClickListener {
             navController.navigate(R.id.registerWorkout)
         }
+
+        //replay button management
+        view.findViewById<ImageButton>(R.id.replay_timer_id).setOnClickListener {
+            if(state==Etat.WORK){
+                m_startTimer.cancel()
+                // repopulate data
+                min_layout.text= TwoDigitFormat?.format(retrieveMin(model.getconfigworkTime()!!)).toString()
+                sec_layout.text= TwoDigitFormat?.format(retrieveSeconde(model.getconfigworkTime()!!)).toString()
+                round_layout.text= model.configroundTime.value.toString()
+                //initialise
+                homeInitialisation(view)
+            }else{
+                m_restTimer.cancel()
+                //m_pausedAfterrestTimer.cancel()
+
+                min_layout.text= TwoDigitFormat?.format(retrieveMin(model.getconfigrestTime()!!)).toString()
+                sec_layout.text= TwoDigitFormat?.format(retrieveSeconde(model.getconfigrestTime()!!)).toString()
+                round_layout.text= model.configroundTime.value.toString()
+                //initialise
+                homeInitialisation(view)
+            }
+        }
         /**
          * populate main UI
          */
         // initialisation de format
-        min_layout.text= TwoDigitFormat?.format(retrieveMin(m_woTime)).toString()//retrieveMin(m_woTime).toString()  //String.format("%02d", (retrieveMin(m_woTime).toString()))//
+        min_layout.text= TwoDigitFormat?.format(retrieveMin(m_woTime)).toString()
         sec_layout.text= TwoDigitFormat?.format(retrieveSeconde(m_woTime)).toString()
         round_layout.text=m_round.toString()
 
 
 
+    }
+
+    private fun homeInitialisation(view: View) {
+        state = Etat.WORK
+        mode = Mode.PLAY
+        playButtonManagingIcon(view)
+        setUI_W_R_state(state, view)
+        m_woTime = model.getconfigworkTime()!!
+        m_restTime = model.getconfigrestTime()!!
+        m_round = model.getconfigroundTime()!!
     }
 
     private fun PlayPauseManagButton(view: View) {
@@ -358,13 +387,13 @@ class HomeTimer : Fragment() {
     /***
      * compute seconde and min
      */
-    fun retrieveSeconde(Seconde:Int):Int{
+    fun retrieveSeconde(Seconde: Int):Int{
         var ret:Int= 0
         ret = Seconde%60
         return ret
     }
 
-    fun retrieveMin(Seconde:Int):Int{
+    fun retrieveMin(Seconde: Int):Int{
         var ret:Int= 0
         ret = Seconde.div(60)
         return ret
@@ -402,7 +431,7 @@ class HomeTimer : Fragment() {
      */
     fun CountdownRestAfterPaused(navController: NavController,workTime:Int,restTime:Int,view: View){
         // faire le décompte
-        object : CountDownTimer((restTime*1000).toLong(), 1000) {
+        m_pausedAfterrestTimer=object : CountDownTimer((restTime*1000).toLong(), 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 setUI_W_R_state(state, view)
                 round_layout.text=m_round.toString() //set round UI

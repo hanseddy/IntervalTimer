@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.Toast
+import androidx.core.view.get
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
@@ -32,6 +33,8 @@ class RegisterWorkout : Fragment() {
     //two digit format
     lateinit var TwoDigitFormat: NumberFormat
     lateinit var recyclerView: RecyclerView
+
+    lateinit var timerCliked:Timer
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -65,6 +68,10 @@ class RegisterWorkout : Fragment() {
             val Timeradapter = TimerAdapter(timerList as ArrayList<Timer>)
             recyclerView.adapter = Timeradapter
         })
+        recyclerView.setOnClickListener {
+            val position=(recyclerView.layoutManager as LinearLayoutManager).getPosition(it)
+            Toast.makeText(requireContext(),"position "+position,Toast.LENGTH_SHORT).show()
+        }
 
     }
 }

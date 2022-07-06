@@ -6,10 +6,19 @@ import com.example.interval_timer.repository.TimerRepository
 import kotlinx.coroutines.launch
 
 class TimerViewmodel(val repository: TimerRepository):ViewModel() {
+
+    val returnTimer=MutableLiveData<Timer>()
+
     val allWords: LiveData<List<Timer>> = repository.getAllWord.asLiveData()
 
     fun insert(timer: Timer) = viewModelScope.launch {
         repository.insertTimer(timer)
+    }
+
+    fun getTimerAt(id:Int) {
+        viewModelScope.launch {
+            returnTimer.value = repository.getTimerAt(id)
+        }
     }
 
     class WordViewmodelFactory(private val repository: TimerRepository): ViewModelProvider.Factory{
